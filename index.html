@@ -743,6 +743,15 @@
                 margin-bottom: 8px;
             }
         }
+
+        /* 💡 針對手機自動生成的撥號連結進行樣式修正 */
+        a[href^="tel"], 
+        a[href^="sms"] {
+            color: inherit !important;      /* 💡 強制跟隨父層的顏色（例如您的深藍或咖啡色） */
+            text-decoration: none !important; /* 💡 移除自動產生的底線 */
+            font-family: inherit !important;  /* 💡 確保字體維持您的手寫感 */
+            font-weight: inherit !important;
+        }
     </style>
 </head>
 <body>
@@ -1435,7 +1444,9 @@ async function submitOrder() {
     let msgMobile = "感謝您的訂購，請等候通知。";
     if (isDailyOrder) {
         msgDesktop = `感謝您的訂購！<br>請記得於 ${time} 至${address}取貨！`;
-        msgMobile  =`感謝您的訂購！<br>請記得於 ${time}<br>至${address}取貨！`;
+        msgMobile  =`
+        感謝您的訂購！<br>請記得於 ${time}<br>
+        至<strong style="font-family:'LXGW WenKai TC', sans-serif !important; color: #30305f;">${address}</strong>取貨！`;
     } else if (hasPreorder) {
         msgDesktop = `
         感謝您的訂購！<strong>請務必主動私訊我們的 IG</strong> ～<br>
