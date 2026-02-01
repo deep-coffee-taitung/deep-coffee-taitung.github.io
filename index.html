@@ -1107,7 +1107,7 @@ window.addEventListener('touchend', e => {
     } else if (diff < -threshold) {
         // 【往右滑 -> 上一頁】
         // 限制：在 Index 2 (須知) 以內（含須知頁）允許滑回上一頁
-        if (currentPage > 0 && currentPage <= 2) {
+        if (currentPage > 0 && currentPage <= 3) {
             prevPage();
         }
     }
@@ -1134,7 +1134,7 @@ window.addEventListener('mousedown', e => {
         if (diff > threshold) {
             if (currentPage < 2) nextPage();
         } else if (diff < -threshold) {
-            if (currentPage > 0 && currentPage <= 2) prevPage();
+            if (currentPage > 0 && currentPage <= 3) prevPage();
         }
         window.removeEventListener('mouseup', handleMouseUp);
     };
