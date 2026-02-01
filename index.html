@@ -79,17 +79,20 @@
         
         .page {
             width: 100vw !important;
-            height: 100vh; /* 確保佔滿全螢幕高度 */
+            height: 100vh;
             display: flex; 
             flex-direction: column;
             align-items: center; 
-            justify-content: center; /* 💡 這是垂直置中的關鍵 */
-            padding: 0; /* 💡 先將 padding 設為 0，避免推擠內容 */
+            /* 💡 改為 flex-start，確保長內容從頂部開始排，不會被推到螢幕外 */
+            justify-content: flex-start !important; 
+            padding: 0;
             margin: 0;
             box-sizing: border-box;
             flex-shrink: 0;
-            overflow: hidden !important;
-            overflow-x: hidden;
+            /* 💡 核心修正：開啟垂直捲動，禁止水平捲動 */
+            overflow-y: auto !important; 
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch; /* 讓 iPhone 滑動更順暢 */
             position: relative;
         }
 
@@ -416,6 +419,7 @@
         .page-checkout {
             /* 核心：從頂部開始排列，不再居中 */
             justify-content: flex-start !important; 
+            min-height: min-content; /* 確保內容能完整撐開容器 */
             padding-top: 3vh; 
         }
 
@@ -984,7 +988,7 @@
     
             <div class="nav-footer">
                 <button class="nav-btn" id="submit-btn" onclick="submitOrder()" style="text-decoration: underline;">確認並提交訂單</button>
-                <span class="prev-link" style="font-size: 1rem;" onclick="prevPage()">回上一頁修改</span>
+                <span class="prev-link" style="font-size: 1rem; margin-top: 10px;" onclick="prevPage()">回上一頁修改</span>
             </div>
         </div>
     </section>
