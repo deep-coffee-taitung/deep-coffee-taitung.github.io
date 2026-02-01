@@ -70,7 +70,7 @@
 
         .slider-container { 
             display: flex; width: 700%; height: 100vh; 
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
             touch-action: pan-y; margin: 0;  /* 💡 確保沒有外邊距 */
             padding: 0; /* 💡 確保沒有內邊距 */;
         }
@@ -86,6 +86,7 @@
             margin: 0;
             box-sizing: border-box;
             flex-shrink: 0;
+            overflow: hidden !important;
             overflow-x: hidden;
             position: relative;
         }
@@ -276,10 +277,23 @@
             overflow: hidden;       /* 💡 超出部分隱藏或自動處理 */
         }
 
+        /* 💡 商品圖片的精緻樣式 */
+        .product-img {
+            width: 100px;          /* 圖片寬度，可依需求調整 */
+            height: 100px;         /* 圖片高度 */
+            flex-shrink: 0;       /* 防止圖片被文字擠壓變形 */
+            object-fit: cover;    /* 核心：維持比例不變形 */
+            border-radius: 6px;   /* 柔和圓角 */
+            margin-right: 0px;   /* 與右側商品名稱的間距 */
+        }
+
         .product-info {
             text-align: left;
             min-width: 0;           /* 💡 這是防止 Flexbox 內文字撐破容器的關鍵技巧 */
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             padding-right: 10px;
         }
 
@@ -743,15 +757,6 @@
                 margin-bottom: 8px;
             }
         }
-
-        /* 💡 針對手機自動生成的撥號連結進行樣式修正 */
-        a[href^="tel"], 
-        a[href^="sms"] {
-            color: inherit !important;      /* 💡 強制跟隨父層的顏色（例如您的深藍或咖啡色） */
-            text-decoration: none !important; /* 💡 移除自動產生的底線 */
-            font-family: inherit !important;  /* 💡 確保字體維持您的手寫感 */
-            font-weight: inherit !important;
-        }
     </style>
 </head>
 <body>
@@ -841,9 +846,14 @@
                 3. 訂單成立付款後，僅能更換等值商品，無法退款。
             </div>
         </div>
+
         <div class="guide-footer">
-            <div class="handwriting-natural" style="opacity: 0.6; font-size: 0.8rem; letter-spacing: 2px;">〈 向左滑動 〉</div>
-        </div>        
+            <button class="handwriting-natural" 
+                    onclick="nextPage()" 
+                    style="background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; font-size: 0.8rem; letter-spacing: 2px; padding: 0;">
+                〈 我已詳細閱讀並同意，點擊前往選購 〉
+            </button>
+        </div>       
     </section>
 
     <section class="page page-menu">
@@ -1019,23 +1029,76 @@ let products = [];
 const slider = document.getElementById('slider');
 const GAS_API = 'https://script.google.com/macros/s/AKfycbxAuM_YOnaQLaDzCfIXmsucHLfQqEzC8qfvMdlfIC9_m2yclWLIcXuaiZcihe2ZyzVg/exec'; 
 
-// --- 滑動與導覽控制 ---
-window.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+
+let isGestureLocked = false; // 💡 關鍵標記：是否進入多點觸控模式
+
+window.addEventListener('touchstart', e => { 
+    // 💡 1. 偵測開始時的縮放比例與手指數量
+    const scale = (window.visualViewport) ? window.visualViewport.scale : 1;
+    
+    // 如果手指數量大於 1，或者螢幕已經處於放大狀態，立即鎖定功能
+    if (e.touches.length > 1 || scale > 1.02) {
+        isGestureLocked = true;
+        return;
+    }
+    
+    isGestureLocked = false; // 重設鎖定狀態
+    startX = e.touches[0].clientX; 
+}, {passive: true});
+
+// 💡 額外加入觸碰移動偵測：如果在移動過程中變成了兩隻手指，也立刻鎖定
+window.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) isGestureLocked = true;
+}, {passive: true});
+
 window.addEventListener('touchend', e => {
+    // 💡 關鍵 2：如果進入過鎖定模式（多點觸控/平移），或者現在依然是放大狀態，絕對不換頁
+    const currentScale = (window.visualViewport) ? window.visualViewport.scale : 1;
+    if (isGestureLocked || currentScale > 1.02) {
+        return; 
+    }
+
+    if (currentPage === 2) return;
+
+    // 💡 關鍵 3：文字選取中也不換頁
+    if (window.getSelection().toString().length > 0) return;
+
     let diff = startX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-        if (diff > 0 && currentPage < 3) nextPage(); 
-        if (diff < -50 && currentPage > 0) prevPage();
+    const threshold = 100; // 提高門檻，讓操作更紮實
+
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0 && currentPage < 2) nextPage(); 
+        else if (diff < -threshold && currentPage > 0) prevPage();
     }
 }, {passive: true});
 
 window.addEventListener('mousedown', e => {
+    // 💡 1. 紀錄開始時的縮放比例
+    const startScale = (window.visualViewport) ? window.visualViewport.scale : 1;
     startX = e.clientX;
+
     const handleMouseUp = (me) => {
+        // 💡 2. 獲取結束時的縮放比例
+        const currentScale = (window.visualViewport) ? window.visualViewport.scale : 1;
+
+        // 💡 3. 如果正在放大狀態 (scale > 1.05)，或是開始與結束時比例不同，則鎖定不換頁
+        if (startScale > 1.05 || currentScale > 1.05) {
+            window.removeEventListener('mouseup', handleMouseUp);
+            return;
+        }
+
+        // 💡 4. 如果滑鼠放開時正在選取文字，也禁止換頁
+        if (window.getSelection().toString().length > 0) {
+            window.removeEventListener('mouseup', handleMouseUp);
+            return;
+        }
+
         let diff = startX - me.clientX;
-        if (Math.abs(diff) > 50) {
-            if (diff > 50 && currentPage < 3) nextPage();
-            if (diff < -50 && currentPage > 0) prevPage();
+        const threshold = 100; // 統一使用 100px 的穩定門檻
+
+        if (Math.abs(diff) > threshold) {
+            if (diff > threshold && currentPage < 2) nextPage();
+            else if (diff < -threshold && currentPage > 0) prevPage();
         }
         window.removeEventListener('mouseup', handleMouseUp);
     };
@@ -1199,6 +1262,12 @@ function renderProductsByCat(cat) {
     });
 
     renderProducts(products); // 執行過濾與渲染
+
+    // 💡 關鍵修正：將商品列表的捲動軸重置回最頂部
+    const listDiv = document.getElementById('product-list');
+    if (listDiv) {
+        listDiv.scrollTop = 0; // 立即跳回頂部
+    }
 }
 
 function renderProducts(data) {
@@ -1217,19 +1286,24 @@ function renderProducts(data) {
         const currentAvailable = p.stock - count;
         const out = currentAvailable <= 0;
 
+        // 💡 核心修改：判斷 p.img 是否有值 (且不是空字串)
+        const imgHtml = (p.img && p.img.trim() !== "") 
+            ? `<img src="${p.img}" class="product-img" onerror="this.style.display='none'" alt="${p.name}">` 
+            : "";
+
         return `
             <div class="product">
+                ${imgHtml}
+
                 <div class="product-info">
-                    <h4 style="margin:0; font-size:1.6rem;">${p.name}</h4>
+                    <h4 style="margin:0; font-size:1.3rem;">${p.name}</h4>
                 </div>
                 
                 <div class="product-price-section">
                     <span class="stock-text" style="color:${out ? '#ff4d4d' : '#888'};">
                         ${out ? '已售完' : '剩餘 ' + currentAvailable}
                     </span>
-                    
                     <div class="price-text">$${p.price}</div>
-                    
                     <div class="qty-controls">
                         ${count > 0 ? `
                             <button class="qty-btn" onclick="removeFromCart(${realIndex})">−</button>
@@ -1444,9 +1518,7 @@ async function submitOrder() {
     let msgMobile = "感謝您的訂購，請等候通知。";
     if (isDailyOrder) {
         msgDesktop = `感謝您的訂購！<br>請記得於 ${time} 至${address}取貨！`;
-        msgMobile  =`
-        感謝您的訂購！<br>請記得於 ${time}<br>
-        至<strong style="font-family:'LXGW WenKai TC', sans-serif !important; color: #30305f;">${address}</strong>取貨！`;
+        msgMobile  =`感謝您的訂購！<br>請記得於 ${time}<br>至${address}取貨！`;
     } else if (hasPreorder) {
         msgDesktop = `
         感謝您的訂購！<strong>請務必主動私訊我們的 IG</strong> ～<br>
