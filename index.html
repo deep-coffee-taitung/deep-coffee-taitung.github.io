@@ -83,13 +83,14 @@
             display: flex; 
             flex-direction: column;
             align-items: center; 
-            justify-content: center; /* 💡 這是垂直置中的關鍵 */
+            justify-content: flex-start !important;
             padding: 0; /* 💡 先將 padding 設為 0，避免推擠內容 */
             margin: 0;
             box-sizing: border-box;
             flex-shrink: 0;
-            overflow: hidden !important;
             overflow-x: hidden;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch; /* 讓 iPhone 滑動更順暢 */
             position: relative;
         }
 
@@ -432,6 +433,7 @@
         .page-checkout .content-card  {
             justify-content: flex-start !important;
             padding-top: 0px; /* 💡 稍微往上提 */
+            min-height: min-content; /* 確保內容能完整撐開容器 */
         }
 
         /* 💡 3. 控制左右兩大欄位的間距與彈性 */
@@ -975,7 +977,7 @@
     
             <div class="nav-footer">
                 <button class="nav-btn" id="submit-btn" onclick="submitOrder()" style="text-decoration: underline;">確認並提交訂單</button>
-                <span class="prev-link" style="font-size: 1rem;" onclick="prevPage()">回上一頁修改</span>
+                <span class="prev-link" style="font-size: 1rem; margin-top: 10px;" onclick="prevPage()">回上一頁修改</span>
             </div>
         </div>
     </section>
@@ -1324,7 +1326,7 @@ function renderProducts(data) {
                 ${imgHtml}
 
                 <div class="product-info">
-                    <h4 style="margin:0; font-size:1.3rem;">${p.name}</h4>
+                    <h4 style="margin:0; font-size:1.5rem;">${p.name}</h4>
                 </div>
                 
                 <div class="product-price-section">
