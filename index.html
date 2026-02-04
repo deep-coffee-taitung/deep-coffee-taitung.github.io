@@ -1495,11 +1495,12 @@ function showCheckout() {
     // 1. 偵測購物車內容類別
     const categories = cart.map(item => {
         const p = products.find(prod => prod.name === item.name);
-        return p ? p.category.trim() : "";
+        const raw = p?.category??"";
+        return String(raw).replace(/\s+/g,"");
     });
 
-    const hasDaily = categories.some(cat => cat === '當日義式' || cat === '當日茶飲' || cat === '當日甜點');
-    const hasPreorder = categories.some(cat => cat === '預約甜點');
+    const hasDaily = categories.some(cat => cat.startsWith("當日"));
+    const hasPreorder = categories.some(cat => cat.startsWith("預"));
 
     // 💡 核心邏輯：若同時存在，提醒分開下單
     if (hasDaily && hasPreorder) {
@@ -1643,7 +1644,7 @@ async function submitOrder() {
         const p = products.find(prod => prod.name === item.name);
         return p ? p.category.trim() : "";
     });
-    const hasDaily = categories.some(cat => cat === '當日義式' || cat === '當日茶飲' || cat === '當日甜點');
+    const hasDaily = categories.some(cat => ['當日義式', '當日茶飲', '當日甜點'].includes(cat));
     const hasPreorder = categories.some(cat => cat === '預約甜點');
 
     const time = document.getElementById('pickup-time').value;
